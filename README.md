@@ -1,58 +1,45 @@
+# Title: Cloudformer APIs for M & A Accounts and Teams metadata
 
-# Welcome to your CDK Python project!
+# Objective:
 
-This is a blank project for CDK development with Python.
+1. The hosting of a limited set of GET API methods to return metadata for M&A accounts and teams.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+2. A Metadata Definition Tool that allows the population of metadata for M&A accounts and teams.
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+3. A means storing metadata for these accounts.  It is assumed that the metadata will be constructed manually leveraging a Metadata Definition Tool
 
-To manually create a virtualenv on MacOS and Linux:
 
-```
-$ python -m venv .venv
-```
+# Pre-requisites:
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+1. Ensure that the AWS account has the necessary permissions to perform the required actions.
+2. Ensure that the DynamoDB table is configured with the appropriate schema.
+3. Ensure that the metadata store bucket has the necessary access policies to allow non-API accounts to make requests.
 
-```
-$ source .venv/bin/activate
-```
+# Steps:
 
-If you are a Windows platform, you would activate the virtualenv like this:
+## Configure the external bucket to transfer data to DynamoDB:
+a. Create a new S3 bucket in the same account as the DynamoDB table.
+b. Configure the bucket to trigger an AWS Lambda function when a new object is added to the bucket.
+c. Configure the Lambda function to extract the data and write it to the DynamoDB table.
 
-```
-% .venv\Scripts\activate.bat
-```
+## Trigger the acct summary lambda to extract and store data in metadata store bucket:
+a. Create a new AWS Lambda function to extract and store the data in a metadata store bucket.
+b. Configure the Lambda function to trigger when a new item is added to the DynamoDB table.
+c. Ensure that the Lambda function has proper access policies to access the DynamoDB table and the metadata store bucket.
 
-Once the virtualenv is activated, you can install the required dependencies.
+## Connect the teams lambda and accounts lambda to the DynamoDB:
+a. Create two new AWS Lambda functions, one for the teams lambda and one for the accounts lambda.
+b. Configure the Lambda functions to retrieve data from the DynamoDB table.
+c. Ensure that the Lambda functions have the appropriate access policies to access the DynamoDB table.
 
-```
-$ pip install -r requirements.txt
-```
+## Create a private API to retrieve data from the DynamoDB table:
+a. Create a new API Gateway endpoint that can be used to retrieve data from the DynamoDB table.
+b. Connect the endpoint to the teams lambda and accounts lambda functions to retrieve data from the DynamoDB table.
+c. Ensure that the private API Gateway endpoint has the appropriate access policies to allow PCP and other integrators  to make API requests.
 
-At this point you can now synthesize the CloudFormation template for this code.
+## Test the setup:
+a. Add new data to the external bucket and ensure that it is transferred to the DynamoDB table and the metadata store bucket.
+b. Use the API Gateway endpoint to retrieve data from the DynamoDB table and ensure that the teams lambda and accounts lambda functions retrieve the data correctly.
 
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+## Conclusion:
+This runbook should help you successfully set up the transfer of data from an external bucket to DynamoDB, trigger the acct summary lambda to extract and store data in a metadata store bucket, and connect two other lambdas to the DynamoDB for API get requests.
